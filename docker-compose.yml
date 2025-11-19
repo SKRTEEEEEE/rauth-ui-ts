@@ -1,0 +1,28 @@
+# Docker Compose configuration for RAuth SDK Example
+version: '3.8'
+
+services:
+  # Basic React Example
+  basic-react-example:
+    build:
+      context: .
+      dockerfile: examples/basic-react/Dockerfile
+    container_name: rauth-basic-react-example
+    ports:
+      - "5173:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - rauth-network
+
+networks:
+  rauth-network:
+    driver: bridge
+    name: rauth-network

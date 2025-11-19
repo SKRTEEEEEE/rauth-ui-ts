@@ -8,6 +8,21 @@ Official TypeScript SDK for integrating RAuth authentication in React and Next.j
 npm install rauth
 ```
 
+## 📚 Examples
+
+Check out the [basic React example](./examples/basic-react) to see the SDK in action. The example demonstrates:
+- SDK initialization
+- AuthProvider setup
+- Multiple ways to use AuthComponent
+- Component customization options
+
+To run the example:
+```bash
+cd examples/basic-react
+npm install
+npm run dev
+```
+
 ## Quick Start
 
 ### React

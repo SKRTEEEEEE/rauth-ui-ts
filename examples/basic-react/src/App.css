@@ -1,0 +1,224 @@
+/**
+ * RAuth Basic React Example - Styles
+ */
+
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* App Container */
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  color: white;
+  margin-bottom: 40px;
+  padding: 40px 20px;
+}
+
+.header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Main Content */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Section */
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.section h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.description {
+  margin: 0 0 20px 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.description code {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e83e8c;
+}
+
+/* Demo Box */
+.demo-box {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+/* Code Details */
+.code-details {
+  margin-top: 15px;
+}
+
+.code-details summary {
+  cursor: pointer;
+  color: #667eea;
+  font-weight: 500;
+  padding: 8px;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.code-details summary:hover {
+  background: #f5f5f5;
+}
+
+.code-details pre {
+  margin: 10px 0 0 0;
+  padding: 15px;
+  background: #282c34;
+  color: #abb2bf;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Info Section */
+.info-section {
+  background: #f8f9fa;
+  border-left: 4px solid #667eea;
+}
+
+.features-list,
+.steps-list {
+  margin: 15px 0 0 0;
+  padding-left: 20px;
+  color: #444;
+  line-height: 1.8;
+}
+
+.features-list li,
+.steps-list li {
+  margin-bottom: 10px;
+}
+
+.features-list strong {
+  color: #667eea;
+}
+
+.steps-list a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.steps-list a:hover {
+  text-decoration: underline;
+}
+
+.steps-list code {
+  background: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e83e8c;
+  border: 1px solid #dee2e6;
+}
+
+/* Custom Auth Styling Example */
+.custom-auth {
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  padding: 20px;
+  background: white;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  color: white;
+  margin-top: 60px;
+  padding: 30px 20px;
+  opacity: 0.9;
+}
+
+.footer p {
+  margin: 5px 0;
+}
+
+.heart {
+  color: #ff6b6b;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .section {
+    padding: 20px;
+  }
+
+  .code-details pre {
+    font-size: 0.8rem;
+  }
+}
