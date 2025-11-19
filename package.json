@@ -1,0 +1,51 @@
+{
+  "name": "rauth",
+  "version": "0.1.0",
+  "description": "Official RAuth SDK for React and Next.js - Seamless OAuth authentication integration with Google, GitHub, Facebook and more",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "echo \"Dev mode placeholder - will be configured with Vite in future tasks\"",
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "auth",
+    "oauth",
+    "react",
+    "nextjs",
+    "authentication",
+    "google",
+    "github",
+    "facebook",
+    "login",
+    "sdk"
+  ],
+  "author": "RAuth Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "happy-dom": "^20.0.10",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rauth/rauth-sdk-ts"
+  }
+}
