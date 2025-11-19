@@ -11,7 +11,7 @@ export { useAuth } from './hooks/useAuth';
 export { useSession } from './hooks/useSession';
 
 // Providers
-export { AuthProvider } from './providers/AuthProvider';
+export { AuthProvider, initRauth, useAuthContext } from './providers/AuthProvider';
 
 // API utilities
 export {

@@ -4,6 +4,7 @@
  */
 
 import { beforeEach } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 
 // Simple in-memory storage implementation for tests
 class LocalStorageMock {
