@@ -12,7 +12,10 @@ export type { UseAuthReturn } from './hooks/useAuth';
 export { useSession } from './hooks/useSession';
 
 // Providers
-export { AuthProvider, initRauth, useAuthContext } from './providers/AuthProvider';
+export { AuthProvider, useAuthContext } from './providers/AuthProvider';
+
+// Configuration
+export { initRauth, getConfig, isConfigured } from './utils/config';
 
 // API utilities
 export {

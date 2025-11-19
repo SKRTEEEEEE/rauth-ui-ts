@@ -7,7 +7,7 @@ import type { AuthState, RAuthConfig, ProviderName } from '../utils/types';
 import { storage } from '../utils/storage';
 import { getCurrentUser, initApi } from '../utils/api';
 import { isTokenExpired } from '../utils/jwt';
-import { DEFAULT_BASE_URL } from '../utils/constants';
+import { isConfigured, getConfig } from '../utils/config';
 
 /**
  * Extended AuthContext type with functions and config
@@ -24,33 +24,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 interface AuthProviderProps {
   children: ReactNode;
   config: RAuthConfig;
-}
-
-/**
- * Initialize RAuth SDK with configuration
- * Validates config and sets up global settings
- * 
- * @param config - RAuth configuration object
- * @throws Error if apiKey is missing or providers array is empty
- */
-export function initRauth(config: RAuthConfig): void {
-  // Validate apiKey
-  if (!config.apiKey || config.apiKey.trim() === '') {
-    throw new Error('apiKey is required');
-  }
-
-  // Validate providers (if explicitly set to empty array)
-  if (config.providers && config.providers.length === 0) {
-    throw new Error('At least one provider must be configured');
-  }
-
-  // Set default baseUrl if not provided
-  if (!config.baseUrl) {
-    config.baseUrl = DEFAULT_BASE_URL;
-  }
-
-  // Initialize API with config
-  initApi(config.apiKey, config.baseUrl);
 }
 
 /**
@@ -103,8 +76,18 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
   }, []);
 
   useEffect(() => {
-    // Initialize API with config
-    initApi(config.apiKey, config.baseUrl);
+    // Warn if global config is not initialized
+    if (!isConfigured()) {
+      console.warn(
+        '[RAuth SDK] Warning: AuthProvider is being used but initRauth() has not been called. ' +
+        'It is recommended to call initRauth() before mounting AuthProvider. ' +
+        'Using config passed as prop instead.'
+      );
+    }
+
+    // Initialize API with config (use global config if available, otherwise use prop)
+    const activeConfig = isConfigured() ? getConfig() : config;
+    initApi(activeConfig.apiKey, activeConfig.baseUrl);
 
     // Check for existing session
     const initAuth = async () => {

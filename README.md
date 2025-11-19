@@ -13,11 +13,17 @@ npm install rauth
 ### React
 
 ```tsx
-import { AuthProvider, AuthComponent } from 'rauth';
+import { initRauth, AuthProvider, AuthComponent } from 'rauth';
+
+// Initialize the SDK once at app startup
+initRauth({
+  apiKey: 'your-api-key',
+  providers: ['google', 'github'],
+});
 
 function App() {
   return (
-    <AuthProvider config={{ apiKey: 'your-api-key' }}>
+    <AuthProvider config={{ apiKey: 'your-api-key', providers: ['google', 'github'] }}>
       <AuthComponent provider="google" />
     </AuthProvider>
   );
@@ -27,16 +33,41 @@ function App() {
 ### Next.js
 
 ```tsx
+// app/providers.tsx (Client Component)
+'use client';
+
+import { AuthProvider, initRauth } from 'rauth';
+import { useEffect } from 'react';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Initialize SDK on client side
+    initRauth({
+      apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY!,
+      providers: ['google', 'github'],
+    });
+  }, []);
+
+  return (
+    <AuthProvider config={{ 
+      apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY!,
+      providers: ['google', 'github']
+    }}>
+      {children}
+    </AuthProvider>
+  );
+}
+
 // app/layout.tsx
-import { AuthProvider } from 'rauth';
+import { Providers } from './providers';
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <AuthProvider config={{ apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY }}>
+        <Providers>
           {children}
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
@@ -46,7 +77,7 @@ export default function RootLayout({ children }) {
 import { AuthComponent } from 'rauth';
 
 export default function Home() {
-  return <AuthComponent providers={['google', 'github']} />;
+  return <AuthComponent provider="google" />;
 }
 ```
 
@@ -62,12 +93,34 @@ export default function Home() {
 
 ## Core Components
 
+### Configuration (initRauth)
+
+Initialize the SDK once at the start of your application:
+
+```tsx
+import { initRauth } from 'rauth';
+
+initRauth({
+  apiKey: 'your-api-key',
+  providers: ['google', 'github'],
+  baseUrl: 'https://api.rauth.dev', // optional, defaults to production
+  storage: {
+    type: 'localStorage', // 'localStorage' | 'sessionStorage' | 'cookies'
+    prefix: 'rauth_', // optional, defaults to 'rauth_'
+  },
+  debug: false, // optional, enables debug logging
+});
+```
+
 ### AuthProvider
 
 Wrap your app with `AuthProvider` to enable authentication:
 
 ```tsx
-<AuthProvider config={{ apiKey: 'your-api-key' }}>
+<AuthProvider config={{ 
+  apiKey: 'your-api-key',
+  providers: ['google', 'github']
+}}>
   <App />
 </AuthProvider>
 ```

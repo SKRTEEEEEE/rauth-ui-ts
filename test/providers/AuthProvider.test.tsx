@@ -5,7 +5,8 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { AuthProvider, useAuthContext, initRauth } from '../../src/providers/AuthProvider';
+import { AuthProvider, useAuthContext } from '../../src/providers/AuthProvider';
+import { initRauth, resetConfig } from '../../src/utils/config';
 import { storage } from '../../src/utils/storage';
 import type { RAuthConfig, User } from '../../src/utils/types';
 import * as api from '../../src/utils/api';
@@ -35,6 +36,7 @@ describe('AuthProvider', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    resetConfig();
   });
 
   afterEach(() => {
