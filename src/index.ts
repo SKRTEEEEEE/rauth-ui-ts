@@ -49,12 +49,48 @@ export {
 
 // Types
 export type {
-  Provider,
+  // Provider types
+  ProviderName,
+  
+  // User and session types
   User,
   Session,
-  AuthState,
+  
+  // Configuration types
   RAuthConfig,
-  ApiError,
+  StorageConfig,
+  StorageType,
+  CookieOptions,
+  SameSite,
+  
+  // State types
+  AuthState,
+  
+  // Response types
+  LoginResponse,
+  RefreshResponse,
   OAuthResponse,
+  
+  // Error types
+  ApiError,
+  
+  // Component props
+  AuthComponentProps,
+  
+  // Hook options
+  UseSessionOptions,
+  
+  // Legacy types (deprecated)
   RefreshTokenResponse,
 } from './utils/types';
+
+// Constants
+export {
+  DEFAULT_BASE_URL,
+  SUPPORTED_PROVIDERS,
+  DEFAULT_REFRESH_THRESHOLD,
+  DEFAULT_STORAGE_PREFIX,
+  API_ENDPOINTS,
+  HTTP_STATUS,
+  ERROR_CODES,
+} from './utils/constants';

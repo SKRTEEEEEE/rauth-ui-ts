@@ -23,8 +23,8 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
   const [state, setState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
+    session: null,
     loading: true,
-    error: null,
   });
 
   useEffect(() => {
@@ -40,8 +40,8 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
           setState({
             isAuthenticated: false,
             user: null,
+            session: null,
             loading: false,
-            error: null,
           });
           return;
         }
@@ -51,15 +51,16 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
         setState({
           isAuthenticated: true,
           user,
+          session: null, // TODO: Load session from storage
           loading: false,
-          error: null,
         });
       } catch (error) {
         setState({
           isAuthenticated: false,
           user: null,
+          session: null,
           loading: false,
-          error: error instanceof Error ? error : new Error('Authentication failed'),
+          error: error instanceof Error ? error.message : 'Authentication failed',
         });
       }
     };
