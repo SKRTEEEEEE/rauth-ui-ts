@@ -5,9 +5,9 @@
 import { createContext, useState, useEffect, ReactNode, useContext, useCallback } from 'react';
 import type { AuthState, RAuthConfig, ProviderName } from '../utils/types';
 import { storage } from '../utils/storage';
-import { getCurrentUser, initApi } from '../utils/api';
+import { getCurrentUser } from '../utils/api';
 import { isTokenExpired } from '../utils/jwt';
-import { isConfigured, getConfig } from '../utils/config';
+import { isConfigured } from '../utils/config';
 
 /**
  * Extended AuthContext type with functions and config
@@ -84,10 +84,6 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
         'Using config passed as prop instead.'
       );
     }
-
-    // Initialize API with config (use global config if available, otherwise use prop)
-    const activeConfig = isConfigured() ? getConfig() : config;
-    initApi(activeConfig.apiKey, activeConfig.baseUrl);
 
     // Check for existing session
     const initAuth = async () => {

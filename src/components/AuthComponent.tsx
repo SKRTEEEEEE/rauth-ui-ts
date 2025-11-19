@@ -37,7 +37,7 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import type { ProviderName } from '../utils/types';
-import { initiateOAuth, deleteSession } from '../utils/api';
+import { getOAuthAuthorizeUrl, deleteSession } from '../utils/api';
 import { storage } from '../utils/storage';
 
 /**
@@ -168,20 +168,20 @@ export function AuthComponent({
 
   /**
    * Handle login button click
-   * Initiates OAuth flow by calling backend and redirecting to provider
+   * Initiates OAuth flow by redirecting to provider
    */
   const handleLogin = async (selectedProvider: ProviderName) => {
     try {
       setActionLoading(true);
       
-      // Call backend to get OAuth authorization URL
-      const response = await initiateOAuth(selectedProvider);
+      // Generate OAuth authorization URL
+      const authUrl = getOAuthAuthorizeUrl(selectedProvider);
       
       // Call success callback before redirect
       onLoginSuccess?.();
       
       // Redirect to OAuth provider
-      window.location.href = response.authUrl;
+      window.location.href = authUrl;
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Login failed');
       onError?.(err);

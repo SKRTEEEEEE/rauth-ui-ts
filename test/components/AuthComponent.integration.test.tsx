@@ -48,10 +48,7 @@ describe('AuthComponent Integration', () => {
     vi.mocked(storage.getSessionId).mockReturnValue(null);
     vi.mocked(storage.getUser).mockReturnValue(null);
     vi.mocked(api.getCurrentUser).mockResolvedValue(null);
-    vi.mocked(api.initiateOAuth).mockResolvedValue({
-      authUrl: 'https://oauth.example.com/google',
-      state: 'mock-state-123',
-    });
+    // NOTE: initiateOAuth no longer exists - replaced by getOAuthAuthorizeUrl which doesn't need mocking
   });
 
   afterEach(() => {

@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useCallback } from 'react';
-import { refreshToken } from '../utils/api';
+import { refreshSession } from '../utils/api';
 import { storage } from '../utils/storage';
 import { isTokenExpired } from '../utils/jwt';
 
@@ -21,7 +21,12 @@ export function useSession(options: UseSessionOptions = {}) {
 
   const handleRefreshToken = useCallback(async () => {
     try {
-      const response = await refreshToken();
+      const currentRefreshToken = storage.getRefreshToken();
+      if (!currentRefreshToken) {
+        throw new Error('No refresh token available');
+      }
+      
+      const response = await refreshSession(currentRefreshToken);
       storage.setAccessToken(response.accessToken);
       storage.setRefreshToken(response.refreshToken);
       onTokenRefreshed?.();

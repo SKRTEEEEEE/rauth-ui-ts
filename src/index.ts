@@ -20,11 +20,13 @@ export { initRauth, getConfig, isConfigured } from './utils/config';
 // API utilities
 export {
   api,
-  initApi,
-  getApiConfig,
-  initiateOAuth,
+  buildUrl,
+  getAuthHeaders,
+  apiRequest,
+  getOAuthAuthorizeUrl,
+  handleOAuthCallback,
   getCurrentUser,
-  refreshToken,
+  refreshSession,
   deleteSession,
 } from './utils/api';
 
