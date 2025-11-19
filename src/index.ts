@@ -39,7 +39,10 @@ export {
   isTokenExpired,
   getTokenExpiration,
   getTokenSubject,
+  getTokenClaim,
 } from './utils/jwt';
+
+export type { JWTPayload } from './utils/jwt';
 
 // Server-side utilities (for Next.js)
 export {
