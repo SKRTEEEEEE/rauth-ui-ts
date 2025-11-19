@@ -4,13 +4,13 @@
 
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import type { Provider } from '../utils/types';
+import type { ProviderName } from '../utils/types';
 import { initiateOAuth, deleteSession } from '../utils/api';
 import { storage } from '../utils/storage';
 
 interface AuthComponentProps {
-  provider?: Provider;
-  providers?: Provider[];
+  provider?: ProviderName;
+  providers?: ProviderName[];
   onLoginSuccess?: () => void;
   onLogoutSuccess?: () => void;
   onError?: (error: Error) => void;
@@ -22,7 +22,7 @@ interface AuthComponentProps {
  */
 export function AuthComponent({
   provider,
-  providers = ['google', 'github'],
+  providers = ['google', 'github'] as ProviderName[],
   onLoginSuccess,
   onLogoutSuccess,
   onError,
@@ -30,7 +30,7 @@ export function AuthComponent({
   const { isAuthenticated, user, loading } = useAuth();
   const [actionLoading, setActionLoading] = useState(false);
 
-  const handleLogin = async (selectedProvider: Provider) => {
+  const handleLogin = async (selectedProvider: ProviderName) => {
     try {
       setActionLoading(true);
       const response = await initiateOAuth(selectedProvider);
@@ -83,7 +83,7 @@ export function AuthComponent({
     return (
       <div className="rauth-profile">
         <div className="rauth-user-info">
-          {user.picture && <img src={user.picture} alt={user.name || user.email} />}
+          {user.avatar && <img src={user.avatar} alt={user.name || user.email} />}
           <div>
             <p>{user.name || user.email}</p>
             <small>{user.email}</small>
