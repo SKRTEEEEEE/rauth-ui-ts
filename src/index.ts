@@ -8,6 +8,7 @@ export { AuthComponent } from './components/AuthComponent';
 
 // Hooks
 export { useAuth } from './hooks/useAuth';
+export type { UseAuthReturn } from './hooks/useAuth';
 export { useSession } from './hooks/useSession';
 
 // Providers
