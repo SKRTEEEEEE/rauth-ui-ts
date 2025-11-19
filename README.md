@@ -184,6 +184,31 @@ This SDK is written in TypeScript and includes type definitions out of the box.
 import type { User, Session, AuthState, RAuthConfig } from 'rauth';
 ```
 
+## Development
+
+### Setup
+
+```bash
+npm install
+```
+
+### Scripts
+
+- `npm run dev` - Start development server with Vite
+- `npm run build` - Build the library for production
+- `npm run test` - Run tests with Vitest
+- `npm run test:watch` - Run tests in watch mode
+- `npm run typecheck` - Run TypeScript type checking
+- `npm run preview` - Preview the production build
+
+### Building
+
+The SDK is built with Vite and generates:
+- ESM format (`dist/index.mjs`)
+- CommonJS format (`dist/index.cjs`)
+- TypeScript declarations (`dist/index.d.ts`)
+- Source maps for debugging
+
 ## Contributing
 
 Contributions are welcome! Please read our contributing guidelines.

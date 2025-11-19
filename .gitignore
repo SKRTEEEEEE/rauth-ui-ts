@@ -1,6 +1,9 @@
 AGENTS.md
 docs/task/
 
+# Dev folder (optional development testing)
+dev/
+
 # Dependencies
 node_modules/
 

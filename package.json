@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "dev": "echo \"Dev mode placeholder - will be configured with Vite in future tasks\"",
-    "build": "tsc",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -37,8 +38,13 @@
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.7.0",
     "happy-dom": "^20.0.10",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "typescript": "^5.3.3",
+    "vite": "^6.4.1",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^1.1.0"
   },
   "engines": {
