@@ -304,6 +304,133 @@ export const config = {
 };
 ```
 
+## Backend Integration
+
+This SDK is designed to work with the RAuth backend service. For development and testing, you can run the backend locally.
+
+### Prerequisites
+
+- **Backend Running**: The RAuth backend must be running and accessible
+  - Production: `https://api.rauth.dev` (default)
+  - Development: `http://localhost:8080` (configurable via `VITE_RAUTH_BASE_URL`)
+  
+- **OAuth Configuration**: OAuth providers (Google, GitHub, etc.) must be configured in the backend
+
+### Local Development Setup
+
+1. **Start the Backend**:
+   ```bash
+   cd ../rauth-backend-go
+   go run main.go
+   ```
+   Backend will be available at `http://localhost:8080`
+
+2. **Verify Backend Health**:
+   ```bash
+   curl http://localhost:8080/health
+   ```
+   Expected response:
+   ```json
+   {
+     "status": "ok",
+     "database": "ok",
+     "redis": "ok",
+     "service": "rauth"
+   }
+   ```
+
+3. **Configure SDK to Use Local Backend**:
+   ```typescript
+   initRauth({
+     apiKey: 'your-api-key',
+     baseUrl: 'http://localhost:8080', // Use local backend
+     providers: ['google'],
+     debug: true, // Enable debug logging
+   });
+   ```
+
+### Testing Backend Integration
+
+The SDK includes integration tests that validate connectivity with the real backend:
+
+```bash
+# Run integration tests (requires backend running)
+npm test -- test/integration/
+```
+
+**Note**: Most integration tests are skipped by default (using `describe.skip`). To run them:
+1. Ensure backend is running at `http://localhost:8080`
+2. Edit test files to change `describe.skip` to `describe`
+3. For tests requiring authentication, obtain valid tokens via OAuth flow
+
+### Backend Endpoints Used
+
+The SDK communicates with these backend endpoints:
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/health` | GET | Health check |
+| `/api/v1/oauth/authorize` | GET | Initiate OAuth flow |
+| `/api/v1/oauth/callback` | POST | Exchange code for tokens |
+| `/api/v1/users/me` | GET | Get current user |
+| `/api/v1/sessions/refresh` | POST | Refresh access token |
+| `/api/v1/sessions/:id` | DELETE | Logout (invalidate session) |
+
+### CORS Configuration
+
+For local development, ensure the backend has CORS configured to allow requests from your frontend origin:
+
+```
+Access-Control-Allow-Origin: http://localhost:5173
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+Access-Control-Allow-Headers: Content-Type, Authorization
+Access-Control-Allow-Credentials: true
+```
+
+### Manual OAuth Flow Testing
+
+To manually test the complete OAuth flow:
+
+1. Start backend at `http://localhost:8080`
+2. Start frontend: `npm run dev` (in `examples/basic-react`)
+3. Open browser at `http://localhost:5173`
+4. Open browser DevTools (Network tab)
+5. Click "Sign in with Google"
+6. Authorize with real Google account
+7. Verify:
+   - Redirect flow completes
+   - Tokens saved to `localStorage`
+   - User data displayed in UI
+   - Network calls to backend succeed
+
+Expected network sequence:
+1. `GET /api/v1/oauth/authorize?provider=google&...`
+2. Redirect to Google OAuth
+3. Google callback to backend
+4. `POST /api/v1/oauth/callback` (exchange code)
+5. Redirect back to frontend with tokens
+6. `GET /api/v1/users/me` (fetch user data)
+
+### Troubleshooting
+
+**CORS Errors**:
+- Check backend CORS configuration
+- Verify origin matches frontend URL
+
+**401 Unauthorized**:
+- Check access token in request headers
+- Token may be expired (should auto-refresh)
+
+**OAuth Errors**:
+- Verify OAuth provider configured in backend
+- Check redirect_uri matches backend whitelist
+- Ensure state parameter preserved in sessionStorage
+
+**Network Errors**:
+- Verify backend is running and accessible
+- Check `baseUrl` in SDK configuration
+- Inspect browser console for detailed errors
+
 ## API Reference
 
 See [docs/API.md](./docs/API.md) for detailed API documentation.
