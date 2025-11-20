@@ -14,7 +14,13 @@ import * as jwt from '../../src/utils/jwt';
 
 // Mock dependencies
 vi.mock('../../src/utils/storage');
-vi.mock('../../src/utils/api');
+vi.mock('../../src/utils/api', async () => {
+  const actual = await vi.importActual<typeof api>('../../src/utils/api');
+  return {
+    ...actual,
+    getCurrentUser: vi.fn(),
+  };
+});
 vi.mock('../../src/utils/jwt');
 
 describe('AuthProvider', () => {
@@ -360,8 +366,8 @@ describe('AuthProvider', () => {
         expect.stringContaining('Initiating OAuth flow')
       );
       
-      // Should redirect
-      expect(window.location.href).toContain('/api/v1/oauth/authorize');
+      // Should redirect to the correct OAuth URL
+      expect(window.location.href).toContain('https://test.api.com/api/v1/oauth/authorize');
 
       consoleSpy.mockRestore();
     });
