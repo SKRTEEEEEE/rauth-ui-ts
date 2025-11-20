@@ -24,11 +24,19 @@ export {
   getAuthHeaders,
   apiRequest,
   getOAuthAuthorizeUrl,
-  handleOAuthCallback,
   getCurrentUser,
   refreshSession,
   deleteSession,
 } from './utils/api';
+
+// OAuth utilities
+export {
+  generateState,
+  getCallbackUrl,
+  initiateOAuth,
+  validateState,
+  handleOAuthCallback,
+} from './utils/oauth';
 
 // Storage utilities
 export { storage, STORAGE_KEYS } from './utils/storage';

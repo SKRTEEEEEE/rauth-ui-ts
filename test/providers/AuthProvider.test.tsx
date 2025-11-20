@@ -325,9 +325,19 @@ describe('AuthProvider', () => {
     });
   });
 
-  describe('Placeholder functions', () => {
-    it('should have login placeholder that logs to console', async () => {
+  describe('OAuth functions', () => {
+    it('should initiate OAuth flow on login', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      
+      // Mock window.location
+      delete (window as any).location;
+      (window as any).location = { href: '', origin: 'https://test.app.com' };
+      
+      // Initialize config so OAuth can work
+      initRauth({
+        apiKey: 'test-key',
+        baseUrl: 'https://test.api.com',
+      });
 
       const TestComponent = () => {
         const { login } = useAuthContext();
@@ -345,9 +355,13 @@ describe('AuthProvider', () => {
       const button = screen.getByText('Login');
       button.click();
 
+      // Should log OAuth initiation
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('login')
+        expect.stringContaining('Initiating OAuth flow')
       );
+      
+      // Should redirect
+      expect(window.location.href).toContain('/api/v1/oauth/authorize');
 
       consoleSpy.mockRestore();
     });

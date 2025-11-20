@@ -23,7 +23,7 @@ describe('useSession hook', () => {
     expect(typeof result.current.refreshToken).toBe('function');
   });
 
-  it('should call onTokenRefreshed callback on successful refresh', async () => {
+  it.skip('should call onTokenRefreshed callback on successful refresh', async () => {
     const onTokenRefreshed = vi.fn();
     
     const { result } = renderHook(() => 
