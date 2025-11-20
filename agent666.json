@@ -4,7 +4,7 @@
   "behavior": "default",
   "modifiers": [],
   "mode": "auto",
-  "skipPermissionsUnsafe": true,
+  "skipPermissionsUnsafe": false,
   "submodules": {
     "enabled": false,
     "pushTarget": "main",
