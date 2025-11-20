@@ -47,6 +47,8 @@ function App() {
 
 ### Next.js
 
+#### Basic Client-Side Setup
+
 ```tsx
 // app/providers.tsx (Client Component)
 'use client';
@@ -97,6 +99,80 @@ export default function Home() {
   return <AuthComponent provider="google" />;
 }
 ```
+
+#### SSR-Optimized Setup (No Loading Flash)
+
+For optimal SSR experience with no flash of unauthenticated content, use `initialSession`:
+
+```tsx
+// app/providers.tsx (Client Component)
+'use client';
+
+import { AuthProvider } from 'rauth';
+import type { User, Session } from 'rauth';
+
+interface ProvidersProps {
+  children: React.ReactNode;
+  initialSession?: { user: User; session: Session } | null;
+}
+
+export function Providers({ children, initialSession }: ProvidersProps) {
+  return (
+    <AuthProvider 
+      config={{ 
+        apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY!,
+        baseUrl: process.env.NEXT_PUBLIC_RAUTH_BASE_URL,
+        providers: ['google', 'github']
+      }}
+      initialSession={initialSession}
+    >
+      {children}
+    </AuthProvider>
+  );
+}
+
+// app/layout.tsx (Server Component)
+import { Providers } from './providers';
+import { getSession } from 'rauth/server';
+
+export default async function RootLayout({ children }) {
+  // Get session from server-side cookies
+  const initialSession = await getSession();
+
+  return (
+    <html>
+      <body>
+        <Providers initialSession={initialSession}>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+#### With React Suspense
+
+For progressive loading with Suspense boundaries:
+
+```tsx
+// app/page.tsx
+import { Suspense } from 'react';
+import { AuthComponent, AuthSkeleton } from 'rauth';
+
+export default function Home() {
+  return (
+    <Suspense fallback={<AuthSkeleton />}>
+      <AuthComponent provider="google" />
+    </Suspense>
+  );
+}
+```
+
+Available skeleton components:
+- `<AuthSkeleton />` - Loading placeholder for auth buttons
+- `<UserSkeleton />` - Loading placeholder for user profile
+- `<ContentSkeleton />` - General loading placeholder
 
 ## Features
 
