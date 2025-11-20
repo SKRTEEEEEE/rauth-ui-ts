@@ -59,6 +59,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     // Initialize SDK on client side
     initRauth({
       apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY!,
+      baseUrl: process.env.NEXT_PUBLIC_RAUTH_BASE_URL || undefined, // Optional: for local dev
       providers: ['google', 'github'],
     });
   }, []);
@@ -66,6 +67,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider config={{ 
       apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY!,
+      baseUrl: process.env.NEXT_PUBLIC_RAUTH_BASE_URL,
       providers: ['google', 'github']
     }}>
       {children}
@@ -105,6 +107,43 @@ export default function Home() {
 - 📦 **Lightweight** - Minimal dependencies
 - 🎨 **Customizable** - Easy to style and configure
 - 🔒 **Type Safe** - Full TypeScript support
+
+## Environment Setup
+
+The SDK uses environment variables for configuration. We provide several environment files:
+
+### Environment Files
+
+- **`.env.example`** - Template showing all available variables (committed to git)
+- **`.env.public`** - Public default values for development (committed to git)
+- **`.env.local`** - Your personal configuration (ignored by git)
+
+### Setup for Development with Local Backend
+
+1. Copy `.env.public` to `.env.local`:
+   ```bash
+   cp .env.public .env.local
+   ```
+
+2. Update `.env.local` with your actual values:
+   ```bash
+   NEXT_PUBLIC_RAUTH_API_KEY=your_actual_api_key
+   NEXT_PUBLIC_RAUTH_BASE_URL=http://localhost:8080
+   NEXT_PUBLIC_RAUTH_DEBUG=true
+   ```
+
+### Setup for Production
+
+For production, create `.env.local` with only the API key (uses default production URL):
+
+```bash
+NEXT_PUBLIC_RAUTH_API_KEY=your_production_api_key
+# NEXT_PUBLIC_RAUTH_DEBUG=false (optional, defaults to false)
+```
+
+> **Note:** The `NEXT_PUBLIC_` prefix is for Next.js. For other frameworks:
+> - **Vite**: Use `VITE_` prefix
+> - **Create React App**: Use `REACT_APP_` prefix
 
 ## Core Components
 
