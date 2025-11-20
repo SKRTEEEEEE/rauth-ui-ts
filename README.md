@@ -220,21 +220,50 @@ function Profile() {
 
 ### useSession
 
-Manage session and token refresh:
+Manage session lifecycle and automatic token refresh:
 
 ```tsx
 import { useSession } from 'rauth';
 
 function MyComponent() {
-  const { refreshToken } = useSession({
-    autoRefresh: true,
-    onTokenRefreshed: () => console.log('Token refreshed'),
-    onRefreshError: (error) => console.error('Refresh failed', error),
+  const { 
+    session,               // Current session object
+    isExpired,             // Whether session is expired
+    timeUntilExpiration,   // Milliseconds until token expires
+    refreshToken           // Manual refresh function
+  } = useSession({
+    autoRefresh: true,                              // Auto-refresh tokens before expiration (default: true)
+    refreshThreshold: 5 * 60 * 1000,                // Refresh 5 minutes before expiry (default: 5 min)
+    onRefreshSuccess: (tokens) => {                 // Called after successful refresh
+      console.log('Token refreshed', tokens);
+    },
+    onRefreshError: (error) => {                    // Called on refresh failure
+      console.error('Refresh failed', error);
+    },
+    onSessionExpired: () => {                       // Called when session expires
+      console.log('Session expired, please login again');
+    },
   });
 
-  return <button onClick={refreshToken}>Refresh Token</button>;
+  return (
+    <div>
+      {session && <p>Session ID: {session.id}</p>}
+      {timeUntilExpiration && (
+        <p>Expires in: {Math.floor(timeUntilExpiration / 1000 / 60)} minutes</p>
+      )}
+      <button onClick={refreshToken}>Refresh Token Manually</button>
+    </div>
+  );
 }
 ```
+
+**Features:**
+- ✅ Automatic token refresh before expiration (configurable threshold)
+- ✅ Manual refresh capability
+- ✅ Session expiration detection and cleanup
+- ✅ Configurable callbacks for all events
+- ✅ SSR-safe (works in Next.js server components)
+- ✅ Cross-tab synchronization via storage events
 
 ## Configuration
 
