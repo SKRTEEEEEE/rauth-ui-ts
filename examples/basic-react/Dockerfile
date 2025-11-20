@@ -35,7 +35,7 @@ COPY examples/basic-react/index.html ./
 COPY examples/basic-react/src ./src
 
 # Install dependencies (this will use the local SDK via file:../../)
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Build the example app
 RUN npm run build
@@ -43,8 +43,8 @@ RUN npm run build
 # Stage 3: Serve the built app with nginx
 FROM nginx:alpine AS production
 
-# Copy nginx configuration
-COPY examples/basic-react/nginx.conf /etc/nginx/conf.d/default.conf 2>/dev/null || echo 'server { listen 80; root /usr/share/nginx/html; index index.html; location / { try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
+# Create default nginx configuration for SPA
+RUN echo 'server { listen 80; root /usr/share/nginx/html; index index.html; location / { try_files $uri $uri/ /index.html; } location /health { access_log off; return 200 "healthy\n"; add_header Content-Type text/plain; } }' > /etc/nginx/conf.d/default.conf
 
 # Copy built files from example builder
 COPY --from=example-builder /example/dist /usr/share/nginx/html
