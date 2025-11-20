@@ -4,10 +4,11 @@
 
 import { createContext, useState, useEffect, ReactNode, useContext, useCallback } from 'react';
 import type { AuthState, RAuthConfig, ProviderName } from '../utils/types';
-import { storage } from '../utils/storage';
-import { getCurrentUser, initApi } from '../utils/api';
+import { storage, getSession } from '../utils/storage';
+import { getCurrentUser } from '../utils/api';
 import { isTokenExpired } from '../utils/jwt';
-import { isConfigured, getConfig } from '../utils/config';
+import { isConfigured } from '../utils/config';
+import { initiateOAuth, handleOAuthCallback } from '../utils/oauth';
 
 /**
  * Extended AuthContext type with functions and config
@@ -39,12 +40,22 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
   });
 
   /**
-   * Login placeholder function
-   * Will be implemented in task 4-4
+   * Login function
+   * Initiates OAuth flow by redirecting to provider
    */
   const login = useCallback(async (provider: ProviderName) => {
-    console.log(`[AuthProvider] login called with provider: ${provider} (placeholder - will be implemented in task 4-4)`);
-    // TODO: Implement in task 4-4
+    console.log(`[AuthProvider] Initiating OAuth flow with provider: ${provider}`);
+    
+    try {
+      // Initiate OAuth - this will redirect the browser
+      initiateOAuth(provider);
+    } catch (error) {
+      console.error('[AuthProvider] Failed to initiate OAuth:', error);
+      setState(prev => ({
+        ...prev,
+        error: error instanceof Error ? error.message : 'Failed to initiate login',
+      }));
+    }
   }, []);
 
   /**
@@ -85,13 +96,97 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
       );
     }
 
-    // Initialize API with config (use global config if available, otherwise use prop)
-    const activeConfig = isConfigured() ? getConfig() : config;
-    initApi(activeConfig.apiKey, activeConfig.baseUrl);
+    // Check for OAuth callback in URL
+    const handleOAuthCallbackIfPresent = async () => {
+      if (typeof window === 'undefined') return false;
+
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const error = params.get('error');
+
+      // If no OAuth params, return false
+      if (!code && !error) return false;
+
+      console.log('[AuthProvider] Detected OAuth callback in URL');
+
+      try {
+        if (error) {
+          const errorDescription = params.get('error_description') || error;
+          throw new Error(`OAuth error: ${errorDescription}`);
+        }
+
+        // Handle OAuth callback
+        const loginResponse = await handleOAuthCallback(params);
+
+        // Update state with user and session
+        setState({
+          isAuthenticated: true,
+          user: loginResponse.user,
+          session: loginResponse.session,
+          loading: false,
+        });
+
+        // Call onLoginSuccess callback if provided
+        if (config.onLoginSuccess) {
+          config.onLoginSuccess(loginResponse.user);
+        }
+
+        // Clean up URL params
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        return true;
+      } catch (error) {
+        console.error('[AuthProvider] OAuth callback failed:', error);
+        
+        setState({
+          isAuthenticated: false,
+          user: null,
+          session: null,
+          loading: false,
+          error: error instanceof Error ? error.message : 'OAuth callback failed',
+        });
+
+        // Call onError callback if provided
+        if (config.onError) {
+          config.onError(error instanceof Error ? error.message : 'OAuth callback failed');
+        }
+
+        // Clean up URL params even on error
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        return true;
+      }
+    };
 
     // Check for existing session
     const initAuth = async () => {
       try {
+        // First check if this is an OAuth callback
+        const wasCallback = await handleOAuthCallbackIfPresent();
+        if (wasCallback) {
+          // Callback was handled, don't continue with normal init
+          return;
+        }
+
+        // Try to load session from storage
+        const sessionData = getSession();
+        
+        if (sessionData) {
+          // Session exists in storage
+          setState({
+            isAuthenticated: true,
+            user: sessionData.user,
+            session: sessionData.session,
+            loading: false,
+          });
+          return;
+        }
+
+        // Check for token (legacy support)
         const token = storage.getAccessToken();
         
         if (!token || isTokenExpired(token)) {
@@ -109,7 +204,7 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
         setState({
           isAuthenticated: true,
           user,
-          session: null, // TODO: Load session from storage
+          session: null,
           loading: false,
         });
       } catch (error) {

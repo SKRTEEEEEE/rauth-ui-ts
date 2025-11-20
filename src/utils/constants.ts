@@ -9,9 +9,27 @@ import type { ProviderName } from './types';
 
 /**
  * Default base URL for the RAuth backend API
- * This should be the production API URL
+ * In development, you should override this in initRauth() with your local backend URL
+ * In production, this will point to the production API (when available)
+ * 
+ * @example
+ * ```typescript
+ * // Development
+ * initRauth({
+ *   apiKey: 'test_key',
+ *   baseUrl: 'http://localhost:8080', // Override for local dev
+ *   providers: ['google']
+ * });
+ * 
+ * // Production (uses default)
+ * initRauth({
+ *   apiKey: process.env.NEXT_PUBLIC_RAUTH_API_KEY!,
+ *   // baseUrl will default to production URL
+ *   providers: ['google']
+ * });
+ * ```
  */
-export const DEFAULT_BASE_URL = 'https://api.rauth.dev';
+export const DEFAULT_BASE_URL = 'https://api.rauth.dev'; // Production URL (future)
 
 /**
  * List of all supported OAuth providers

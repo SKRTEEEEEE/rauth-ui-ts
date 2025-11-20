@@ -146,6 +146,8 @@ export interface StorageConfig {
  * @property logoutRedirectUrl - URL to redirect after logout (optional)
  * @property storage - Storage configuration options (optional)
  * @property debug - Enable debug logging (optional)
+ * @property onLoginSuccess - Callback invoked after successful login (optional)
+ * @property onError - Callback invoked on authentication error (optional)
  */
 export interface RAuthConfig {
   apiKey: string;
@@ -155,6 +157,8 @@ export interface RAuthConfig {
   logoutRedirectUrl?: string;
   storage?: StorageConfig;
   debug?: boolean;
+  onLoginSuccess?: (user: User) => void;
+  onError?: (error: string) => void;
 }
 
 /**

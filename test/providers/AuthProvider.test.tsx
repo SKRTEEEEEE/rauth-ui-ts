@@ -14,7 +14,13 @@ import * as jwt from '../../src/utils/jwt';
 
 // Mock dependencies
 vi.mock('../../src/utils/storage');
-vi.mock('../../src/utils/api');
+vi.mock('../../src/utils/api', async () => {
+  const actual = await vi.importActual<typeof api>('../../src/utils/api');
+  return {
+    ...actual,
+    getCurrentUser: vi.fn(),
+  };
+});
 vi.mock('../../src/utils/jwt');
 
 describe('AuthProvider', () => {
@@ -81,19 +87,10 @@ describe('AuthProvider', () => {
       expect(screen.getByTestId('authenticated').textContent).toBe('false');
     });
 
-    it('should initialize API with config on mount', () => {
-      const initApiSpy = vi.spyOn(api, 'initApi');
-
-      render(
-        <AuthProvider config={mockConfig}>
-          <div>Test</div>
-        </AuthProvider>
-      );
-
-      expect(initApiSpy).toHaveBeenCalledWith(
-        mockConfig.apiKey,
-        mockConfig.baseUrl
-      );
+    // NOTE: initApi no longer exists - API configuration is now handled through getConfig()
+    // This test is no longer applicable with the new API architecture
+    it.skip('should initialize API with config on mount', () => {
+      // Test skipped - initApi function removed in favor of getConfig() pattern
     });
 
     it('should load session from storage if token exists and is valid', async () => {
@@ -334,9 +331,19 @@ describe('AuthProvider', () => {
     });
   });
 
-  describe('Placeholder functions', () => {
-    it('should have login placeholder that logs to console', async () => {
+  describe('OAuth functions', () => {
+    it('should initiate OAuth flow on login', async () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      
+      // Mock window.location
+      delete (window as any).location;
+      (window as any).location = { href: '', origin: 'https://test.app.com' };
+      
+      // Initialize config so OAuth can work
+      initRauth({
+        apiKey: 'test-key',
+        baseUrl: 'https://test.api.com',
+      });
 
       const TestComponent = () => {
         const { login } = useAuthContext();
@@ -354,9 +361,13 @@ describe('AuthProvider', () => {
       const button = screen.getByText('Login');
       button.click();
 
+      // Should log OAuth initiation
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('login')
+        expect.stringContaining('Initiating OAuth flow')
       );
+      
+      // Should redirect to the correct OAuth URL
+      expect(window.location.href).toContain('https://test.api.com/api/v1/oauth/authorize');
 
       consoleSpy.mockRestore();
     });

@@ -20,13 +20,23 @@ export { initRauth, getConfig, isConfigured } from './utils/config';
 // API utilities
 export {
   api,
-  initApi,
-  getApiConfig,
-  initiateOAuth,
+  buildUrl,
+  getAuthHeaders,
+  apiRequest,
+  getOAuthAuthorizeUrl,
   getCurrentUser,
-  refreshToken,
+  refreshSession,
   deleteSession,
 } from './utils/api';
+
+// OAuth utilities
+export {
+  generateState,
+  getCallbackUrl,
+  initiateOAuth,
+  validateState,
+  handleOAuthCallback,
+} from './utils/oauth';
 
 // Storage utilities
 export { storage, STORAGE_KEYS } from './utils/storage';
@@ -37,7 +47,10 @@ export {
   isTokenExpired,
   getTokenExpiration,
   getTokenSubject,
+  getTokenClaim,
 } from './utils/jwt';
+
+export type { JWTPayload } from './utils/jwt';
 
 // Server-side utilities (for Next.js)
 export {

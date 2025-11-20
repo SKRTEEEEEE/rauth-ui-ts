@@ -76,8 +76,10 @@ describe('Basic React Example - Validation Tests', () => {
       
       // API utilities
       expect(sdkExports.api).toBeDefined();
-      expect(sdkExports.initiateOAuth).toBeDefined();
+      expect(sdkExports.getOAuthAuthorizeUrl).toBeDefined();
+      expect(sdkExports.handleOAuthCallback).toBeDefined();
       expect(sdkExports.getCurrentUser).toBeDefined();
+      expect(sdkExports.refreshSession).toBeDefined();
       
       // Storage
       expect(sdkExports.storage).toBeDefined();

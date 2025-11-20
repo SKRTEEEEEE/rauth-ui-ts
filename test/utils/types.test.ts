@@ -146,12 +146,12 @@ describe('TypeScript Types', () => {
   describe('RAuthConfig', () => {
     it('should have required fields', () => {
       const config: RAuthConfig = {
-        apiKey: 'test_api_key_placeholder',
+        apiKey: 'test_key_placeholder',
         baseUrl: 'https://api.rauth.dev',
         providers: ['google', 'github'],
       };
 
-      expect(config.apiKey).toBe('test_api_key_placeholder');
+      expect(config.apiKey).toBe('test_key_placeholder');
       expect(config.providers).toHaveLength(2);
     });
 
