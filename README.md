@@ -295,13 +295,35 @@ export async function getServerSideProps() {
 
 ```tsx
 // middleware.ts
-import { authMiddleware } from 'rauth';
+import { createAuthMiddleware } from 'rauth/server';
 
-export const middleware = authMiddleware;
+export const middleware = createAuthMiddleware({
+  protectedPaths: ['/dashboard/*', '/profile'],
+  publicPaths: ['/', '/login', '/signup', '/about'],
+  loginPath: '/login'
+});
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/profile/:path*'],
+  matcher: ['/dashboard/:path*', '/profile'],
 };
+```
+
+**Middleware Options:**
+
+- `protectedPaths`: Array of paths that require authentication (supports wildcards like `/dashboard/*`)
+- `publicPaths`: Array of paths that are publicly accessible without authentication
+- `loginPath`: Path to redirect to when authentication is required (default: `/login`)
+- `requireAuth`: If `true`, all paths require auth unless in `publicPaths` (default: `false`)
+
+**Example with requireAuth:**
+
+```tsx
+// Protect all routes except public ones
+export const middleware = createAuthMiddleware({
+  requireAuth: true,
+  publicPaths: ['/', '/login', '/signup', '/about', '/api/*'],
+  loginPath: '/login'
+});
 ```
 
 ## Backend Integration

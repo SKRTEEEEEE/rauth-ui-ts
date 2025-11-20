@@ -24,7 +24,7 @@ export {
   getAuthHeaders,
   apiRequest,
   getOAuthAuthorizeUrl,
-  getCurrentUser,
+  getCurrentUser as getCurrentUserAPI,
   refreshSession,
   deleteSession,
 } from './utils/api';
@@ -54,15 +54,35 @@ export type { JWTPayload } from './utils/jwt';
 
 // Server-side utilities (for Next.js)
 export {
+  // Pages Router & API Routes
   getSessionAction,
+  getUserAction,
+  requireSession,
+  requireUser,
+  
+  // App Router (Server Components & Server Actions)
+  getSession,
+  getCurrentUser,
+  
+  // Legacy (deprecated)
   getCurrentUserAction,
   validateSessionAction,
 } from './server/actions';
 
 export {
-  authMiddleware,
+  // Middleware factory
+  createAuthMiddleware,
+  
+  // Utility functions
+  isPathMatch,
+  matchesAnyPattern,
   isAuthenticated,
+  
+  // Legacy (deprecated)
+  authMiddleware,
 } from './server/middleware';
+
+export type { AuthMiddlewareOptions } from './server/middleware';
 
 // Types
 export type {
