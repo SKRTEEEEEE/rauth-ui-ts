@@ -3,7 +3,7 @@
  */
 
 import { createContext, useState, useEffect, ReactNode, useContext, useCallback } from 'react';
-import type { AuthState, RAuthConfig, ProviderName } from '../utils/types';
+import type { AuthState, RAuthConfig, ProviderName, User, Session } from '../utils/types';
 import { storage, getSession } from '../utils/storage';
 import { getCurrentUser } from '../utils/api';
 import { isTokenExpired } from '../utils/jwt';
@@ -25,18 +25,62 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 interface AuthProviderProps {
   children: ReactNode;
   config: RAuthConfig;
+  /**
+   * Initial session to use for SSR hydration
+   * Pass session data from server to avoid loading state and hydration mismatches
+   */
+  initialSession?: { user: User; session: Session } | null;
 }
 
 /**
  * Authentication provider component
  * Wraps the app to provide auth state to all components
  */
-export function AuthProvider({ children, config }: AuthProviderProps) {
-  const [state, setState] = useState<AuthState>({
-    isAuthenticated: false,
-    user: null,
-    session: null,
-    loading: true,
+export function AuthProvider({ children, config, initialSession }: AuthProviderProps) {
+  // Initialize state from initialSession if provided (for SSR)
+  const [state, setState] = useState<AuthState>(() => {
+    // If initialSession is explicitly provided (even if null), use it
+    if (initialSession !== undefined) {
+      if (initialSession === null) {
+        return {
+          isAuthenticated: false,
+          user: null,
+          session: null,
+          loading: false,
+        };
+      }
+      
+      // Validate initialSession has valid data
+      if (initialSession.user && initialSession.session) {
+        // Check if session is expired
+        const isExpired = initialSession.session.expiresAt <= Date.now();
+        
+        if (!isExpired) {
+          return {
+            isAuthenticated: true,
+            user: initialSession.user,
+            session: initialSession.session,
+            loading: false,
+          };
+        }
+      }
+      
+      // Invalid or expired initialSession
+      return {
+        isAuthenticated: false,
+        user: null,
+        session: null,
+        loading: false,
+      };
+    }
+    
+    // No initialSession provided, start with loading state
+    return {
+      isAuthenticated: false,
+      user: null,
+      session: null,
+      loading: true,
+    };
   });
 
   /**
@@ -87,6 +131,12 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
   }, []);
 
   useEffect(() => {
+    // Skip initialization if initialSession was provided
+    // This prevents loading flash and hydration mismatches in SSR
+    if (initialSession !== undefined) {
+      return;
+    }
+
     // Warn if global config is not initialized
     if (!isConfigured()) {
       console.warn(
@@ -219,7 +269,7 @@ export function AuthProvider({ children, config }: AuthProviderProps) {
     };
 
     initAuth();
-  }, [config.apiKey, config.baseUrl]);
+  }, [config.apiKey, config.baseUrl, initialSession]);
 
   const contextValue: AuthContextType = {
     ...state,

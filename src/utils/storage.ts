@@ -29,6 +29,22 @@ export function isClient(): boolean {
 }
 
 /**
+ * Check if code is running in a server environment (Node.js/SSR)
+ * 
+ * @returns true if window is undefined (server-side), false otherwise (client)
+ * 
+ * @example
+ * ```typescript
+ * if (isServer()) {
+ *   // Safe to use Node.js APIs, req.headers, etc.
+ * }
+ * ```
+ */
+export function isServer(): boolean {
+  return typeof window === 'undefined';
+}
+
+/**
  * Get the storage prefix from config
  * 
  * @returns Storage prefix string
@@ -201,25 +217,42 @@ export function clear(): void {
 }
 
 /**
- * Set a cookie
+ * Set a cookie (unified client/server wrapper)
+ * 
+ * On client: Sets cookie using document.cookie
+ * On server: Returns Set-Cookie header string
  * 
  * @param key - Cookie name (will be prefixed automatically)
  * @param value - Value to store (will be JSON serialized)
  * @param options - Cookie options
+ * @returns void on client, Set-Cookie header string on server
  * 
  * @example
  * ```typescript
+ * // Client-side
  * setCookie('session_id', '123', {
  *   path: '/',
  *   secure: true,
  *   sameSite: 'lax',
  *   maxAge: 3600
  * });
+ * 
+ * // Server-side
+ * const cookieHeader = setCookie('session_id', '123', { httpOnly: true });
+ * res.setHeader('Set-Cookie', cookieHeader);
  * ```
  */
-export function setCookie(key: string, value: unknown, options: CookieOptions = {}): void {
-  if (!isClient()) return;
+export function setCookie(
+  key: string, 
+  value: unknown, 
+  options: CookieOptions = {}
+): void | string {
+  // Server-side: return Set-Cookie header string
+  if (isServer()) {
+    return setCookieServer(key, value, options);
+  }
 
+  // Client-side: set using document.cookie
   try {
     const prefixedKey = getPrefixedKey(key);
     const serialized = serialize(value);
@@ -257,19 +290,37 @@ export function setCookie(key: string, value: unknown, options: CookieOptions = 
 }
 
 /**
- * Get a cookie value
+ * Get a cookie value (unified client/server wrapper)
+ * 
+ * On client: Reads from document.cookie
+ * On server: Parses from provided cookieHeader
  * 
  * @param key - Cookie name (will be prefixed automatically)
+ * @param cookieHeader - Optional cookie header string (for server-side use)
  * @returns Parsed value or null if not found
  * 
  * @example
  * ```typescript
+ * // Client-side
  * const sessionId = getCookie('session_id');
+ * 
+ * // Server-side (Next.js)
+ * export async function getServerSideProps({ req }) {
+ *   const sessionId = getCookie('session_id', req.headers.cookie);
+ *   return { props: { sessionId } };
+ * }
  * ```
  */
-export function getCookie<T = unknown>(key: string): T | null {
-  if (!isClient()) return null;
+export function getCookie<T = unknown>(
+  key: string,
+  cookieHeader?: string
+): T | null {
+  // Server-side or explicit cookieHeader provided
+  if (isServer() || cookieHeader !== undefined) {
+    return getCookieServer<T>(key, cookieHeader);
+  }
 
+  // Client-side: read from document.cookie
   try {
     const prefixedKey = getPrefixedKey(key);
     const encodedKey = encodeURIComponent(prefixedKey);
@@ -318,6 +369,186 @@ export function getCookie<T = unknown>(key: string): T | null {
 export function removeCookie(key: string, options: CookieOptions = {}): void {
   // Set cookie with maxAge=0 to delete it
   setCookie(key, '', { ...options, maxAge: 0 });
+}
+
+/**
+ * Parse cookie header string into key-value object
+ * 
+ * Server-side helper to parse the Cookie header from HTTP requests.
+ * 
+ * @param cookieHeader - Cookie header string (format: "key1=value1; key2=value2")
+ * @returns Object with cookie key-value pairs
+ * 
+ * @example
+ * ```typescript
+ * const cookies = parseCookies(req.headers.cookie);
+ * // { session: 'abc123', user: 'xyz789' }
+ * ```
+ */
+export function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+
+  try {
+    const cookies: Record<string, string> = {};
+    
+    const cookiePairs = cookieHeader.split(';');
+    
+    for (const pair of cookiePairs) {
+      const trimmedPair = pair.trim();
+      
+      if (!trimmedPair) continue;
+      
+      const equalIndex = trimmedPair.indexOf('=');
+      
+      if (equalIndex === -1) continue; // Skip malformed cookies
+      
+      const name = trimmedPair.substring(0, equalIndex);
+      const value = trimmedPair.substring(equalIndex + 1);
+      
+      if (!name) continue; // Skip empty names
+      
+      try {
+        cookies[decodeURIComponent(name)] = decodeURIComponent(value);
+      } catch {
+        // Skip cookies that can't be decoded
+        continue;
+      }
+    }
+    
+    return cookies;
+  } catch (error) {
+    console.error('[RAuth Storage] Failed to parse cookies:', error);
+    return {};
+  }
+}
+
+/**
+ * Get a cookie value from server-side cookie header
+ * 
+ * @param key - Cookie name (will be prefixed automatically)
+ * @param cookieHeader - Cookie header string from request
+ * @returns Parsed value or null if not found
+ * 
+ * @example
+ * ```typescript
+ * // In Next.js getServerSideProps
+ * export async function getServerSideProps({ req }) {
+ *   const sessionId = getCookieServer('session', req.headers.cookie);
+ *   return { props: { sessionId } };
+ * }
+ * ```
+ */
+export function getCookieServer<T = unknown>(
+  key: string,
+  cookieHeader: string | undefined
+): T | null {
+  if (!cookieHeader) return null;
+
+  try {
+    const prefixedKey = getPrefixedKey(key);
+    const cookies = parseCookies(cookieHeader);
+    
+    const value = cookies[prefixedKey];
+    
+    if (!value || value === '' || value === '""') return null;
+    
+    return deserialize(value) as T | null;
+  } catch (error) {
+    console.error('[RAuth Storage] Failed to get cookie from server:', error);
+    return null;
+  }
+}
+
+/**
+ * Generate Set-Cookie header string for server-side cookie setting
+ * 
+ * Server-side helper to create Set-Cookie header strings.
+ * The returned string should be set in response headers.
+ * 
+ * @param key - Cookie name (will be prefixed automatically)
+ * @param value - Value to store (will be JSON serialized)
+ * @param options - Cookie options
+ * @returns Set-Cookie header string
+ * 
+ * @example
+ * ```typescript
+ * // In Next.js API route
+ * export default function handler(req, res) {
+ *   const cookieString = setCookieServer('session', sessionData, {
+ *     httpOnly: true,
+ *     secure: true,
+ *     sameSite: 'lax',
+ *     maxAge: 3600
+ *   });
+ *   res.setHeader('Set-Cookie', cookieString);
+ * }
+ * ```
+ */
+export function setCookieServer(
+  key: string,
+  value: unknown,
+  options: CookieOptions = {}
+): string {
+  try {
+    const prefixedKey = getPrefixedKey(key);
+    const serialized = serialize(value);
+    
+    if (serialized === null) {
+      // Fallback to empty string if serialization fails
+      return `${encodeURIComponent(prefixedKey)}=; Max-Age=0`;
+    }
+
+    // Build Set-Cookie header string
+    let cookieStr = `${encodeURIComponent(prefixedKey)}=${encodeURIComponent(serialized)}`;
+
+    // Get default options from config
+    let defaultOptions: CookieOptions = {};
+    try {
+      const config = getConfig();
+      defaultOptions = config.storage?.cookieOptions || {};
+    } catch {
+      // Config not initialized, use empty defaults
+    }
+
+    // Merge options (explicit options override defaults)
+    const mergedOptions = { ...defaultOptions, ...options };
+
+    // Add cookie attributes
+    if (mergedOptions.maxAge !== undefined) {
+      cookieStr += `; Max-Age=${mergedOptions.maxAge}`;
+    }
+
+    if (mergedOptions.path !== undefined) {
+      cookieStr += `; Path=${mergedOptions.path}`;
+    }
+
+    if (mergedOptions.domain !== undefined) {
+      cookieStr += `; Domain=${mergedOptions.domain}`;
+    }
+
+    if (mergedOptions.secure !== undefined && mergedOptions.secure) {
+      cookieStr += '; Secure';
+    } else if (process.env.NODE_ENV === 'production') {
+      // Force secure in production
+      cookieStr += '; Secure';
+    }
+
+    if (mergedOptions.sameSite !== undefined) {
+      // Capitalize first letter for proper Set-Cookie format
+      const sameSite = mergedOptions.sameSite.charAt(0).toUpperCase() + 
+                       mergedOptions.sameSite.slice(1).toLowerCase();
+      cookieStr += `; SameSite=${sameSite}`;
+    }
+
+    if (mergedOptions.httpOnly !== undefined && mergedOptions.httpOnly) {
+      cookieStr += '; HttpOnly';
+    }
+
+    return cookieStr;
+  } catch (error) {
+    console.error('[RAuth Storage] Failed to set cookie on server:', error);
+    return '';
+  }
 }
 
 /**
@@ -589,6 +820,68 @@ export function clearSession(): void {
   adapter.remove('access_token');
   adapter.remove('refresh_token');
   adapter.remove('expires_at');
+}
+
+/**
+ * Get session and user data from cookies (SSR helper)
+ * 
+ * Server-side helper to extract and validate session from cookie headers.
+ * Useful for Next.js getServerSideProps, Server Components, and API routes.
+ * 
+ * @param cookieHeader - Cookie header string from request
+ * @returns Session and user data, or null if not found/invalid/expired
+ * 
+ * @example
+ * ```typescript
+ * // Next.js getServerSideProps
+ * export async function getServerSideProps({ req }) {
+ *   const sessionData = getSessionFromCookies(req.headers.cookie);
+ *   
+ *   if (!sessionData) {
+ *     return { redirect: { destination: '/login', permanent: false } };
+ *   }
+ *   
+ *   return { props: { user: sessionData.user } };
+ * }
+ * 
+ * // Next.js API route
+ * export default function handler(req, res) {
+ *   const sessionData = getSessionFromCookies(req.headers.cookie);
+ *   
+ *   if (!sessionData) {
+ *     return res.status(401).json({ error: 'Unauthorized' });
+ *   }
+ *   
+ *   // Use sessionData.user and sessionData.session
+ * }
+ * ```
+ */
+export function getSessionFromCookies(
+  cookieHeader: string | undefined
+): { session: Session; user: User } | null {
+  if (!cookieHeader) return null;
+
+  try {
+    // Get session from cookies
+    const session = getCookieServer<Session>('session', cookieHeader);
+    if (!session) return null;
+
+    // Get user from cookies
+    const user = getCookieServer<User>('user', cookieHeader);
+    if (!user) return null;
+
+    // Check if session is expired
+    const now = Date.now();
+    if (session.expiresAt <= now) {
+      // Session expired
+      return null;
+    }
+
+    return { session, user };
+  } catch (error) {
+    console.error('[RAuth Storage] Failed to get session from cookies:', error);
+    return null;
+  }
 }
 
 /**

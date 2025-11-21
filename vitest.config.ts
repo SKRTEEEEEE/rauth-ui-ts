@@ -19,5 +19,13 @@ export default defineConfig({
         '*.config.js'
       ]
     }
+  },
+  resolve: {
+    alias: {
+      // Mock next/headers for testing (it's only available in Next.js runtime)
+      'next/headers': new URL('./test/mocks/next-headers.mock.ts', import.meta.url).pathname,
+      // Mock next/server for middleware testing
+      'next/server': new URL('./test/mocks/next-server.mock.ts', import.meta.url).pathname
+    }
   }
 });
