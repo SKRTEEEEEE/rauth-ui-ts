@@ -110,6 +110,7 @@ export type SameSite = 'strict' | 'lax' | 'none';
  * @property secure - Whether the cookie requires HTTPS (optional)
  * @property sameSite - SameSite attribute for CSRF protection (optional)
  * @property maxAge - Maximum age of the cookie in seconds (optional)
+ * @property httpOnly - Whether the cookie is HTTP-only (server-side only) (optional)
  */
 export interface CookieOptions {
   domain?: string;
@@ -117,6 +118,7 @@ export interface CookieOptions {
   secure?: boolean;
   sameSite?: SameSite;
   maxAge?: number;
+  httpOnly?: boolean;
 }
 
 /**
