@@ -9,7 +9,8 @@
 import { getConfig } from './config';
 import { buildUrl, apiRequest } from './api';
 import { saveSession } from './storage';
-import type { ProviderName, LoginResponse } from './types';
+import { decodeJWT } from './jwt';
+import type { ProviderName, LoginResponse, User, Session } from './types';
 import { API_ENDPOINTS } from './constants';
 
 /**
@@ -213,10 +214,16 @@ export async function handleOAuthCallback(params: URLSearchParams): Promise<Logi
     throw new Error(`OAuth error: ${errorDescription}`);
   }
 
-  // Get authorization code
+  // Check if backend returned a token directly (simplified flow)
+  const token = params.get('token');
+  if (token) {
+    return handleDirectTokenCallback(token);
+  }
+
+  // Get authorization code (standard OAuth flow)
   const code = params.get('code');
   if (!code) {
-    throw new Error('Missing authorization code in callback');
+    throw new Error('Missing authorization code or token in callback');
   }
 
   // Get and validate state (if present)
@@ -241,6 +248,60 @@ export async function handleOAuthCallback(params: URLSearchParams): Promise<Logi
 
   // Save session and user to storage
   saveSession(loginResponse.session, loginResponse.user);
+
+  return loginResponse;
+}
+
+/**
+ * Handle direct token callback (when backend returns JWT directly)
+ * @internal
+ */
+async function handleDirectTokenCallback(token: string): Promise<LoginResponse> {
+  // Decode JWT to extract user info
+  const payload = decodeJWT(token);
+  if (!payload) {
+    throw new Error('Invalid token received from OAuth callback');
+  }
+
+  // Extract data from JWT payload
+  const userId = payload.user_id as string || payload.sub;
+  const sessionId = payload.session_id as string || '';
+  const email = payload.email as string || '';
+  const exp = payload.exp;
+
+  // Create user object from JWT claims
+  const user: User = {
+    id: userId,
+    email: email,
+    name: payload.name as string | undefined,
+    avatar: payload.avatar as string | undefined,
+    emailVerified: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  // Create session object
+  const session: Session = {
+    id: sessionId,
+    userId: userId,
+    accessToken: token,
+    refreshToken: '', // Backend may not provide refresh token in this flow
+    expiresAt: exp * 1000, // Convert to milliseconds
+    createdAt: new Date().toISOString(),
+    provider: 'google', // Default, could be extracted from JWT if available
+  };
+
+  // Create login response
+  const loginResponse: LoginResponse = {
+    user,
+    session,
+    accessToken: token,
+    refreshToken: '',
+    expiresAt: exp * 1000,
+  };
+
+  // Save session and user to storage
+  saveSession(session, user);
 
   return loginResponse;
 }

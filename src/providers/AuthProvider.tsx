@@ -152,10 +152,11 @@ export function AuthProvider({ children, config, initialSession }: AuthProviderP
 
       const params = new URLSearchParams(window.location.search);
       const code = params.get('code');
+      const token = params.get('token');
       const error = params.get('error');
 
       // If no OAuth params, return false
-      if (!code && !error) return false;
+      if (!code && !token && !error) return false;
 
       console.log('[AuthProvider] Detected OAuth callback in URL');
 
