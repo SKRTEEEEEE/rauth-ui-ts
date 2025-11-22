@@ -73,6 +73,14 @@ export function initRauth(config: RAuthConfig): RAuthConfig {
     );
   }
 
+  // Validate appId
+  if (!config.appId || config.appId.trim() === '') {
+    throw new Error(
+      'RAuth SDK Error: appId is required. ' +
+      'Get your Application ID from the RAuth dashboard at https://dashboard.rauth.dev'
+    );
+  }
+
   // Validate providers if explicitly set
   if (config.providers !== undefined) {
     if (config.providers.length === 0) {

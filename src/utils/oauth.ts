@@ -107,6 +107,9 @@ export function getCallbackUrl(path: string = '/auth/callback'): string {
  * ```
  */
 export function initiateOAuth(provider: ProviderName): void {
+  // Get config for appId
+  const config = getConfig();
+
   // Generate state for CSRF protection
   const state = generateState();
 
@@ -117,6 +120,7 @@ export function initiateOAuth(provider: ProviderName): void {
   const baseUrl = buildUrl(API_ENDPOINTS.OAUTH_AUTHORIZE);
   const params = new URLSearchParams({
     provider,
+    app_id: config.appId,
     redirect_uri: redirectUri,
     state,
   });

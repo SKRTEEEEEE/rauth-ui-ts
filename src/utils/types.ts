@@ -142,6 +142,7 @@ export interface StorageConfig {
  * Configuration object for initializing the RAuth SDK.
  * 
  * @property apiKey - API key from the RAuth dashboard
+ * @property appId - Application ID from the RAuth dashboard (required for OAuth)
  * @property baseUrl - Base URL of the RAuth backend API (optional)
  * @property providers - Array of enabled OAuth providers (optional)
  * @property redirectUrl - URL to redirect after successful login (optional)
@@ -153,6 +154,7 @@ export interface StorageConfig {
  */
 export interface RAuthConfig {
   apiKey: string;
+  appId: string;
   baseUrl?: string;
   providers?: ProviderName[];
   redirectUrl?: string;

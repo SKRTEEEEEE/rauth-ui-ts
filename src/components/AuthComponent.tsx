@@ -37,7 +37,8 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import type { ProviderName } from '../utils/types';
-import { getOAuthAuthorizeUrl, deleteSession } from '../utils/api';
+import { deleteSession } from '../utils/api';
+import { initiateOAuth } from '../utils/oauth';
 import { storage } from '../utils/storage';
 
 /**
@@ -174,18 +175,14 @@ export function AuthComponent({
     try {
       setActionLoading(true);
       
-      // Generate OAuth authorization URL
-      const authUrl = getOAuthAuthorizeUrl(selectedProvider);
-      
       // Call success callback before redirect
       onLoginSuccess?.();
       
-      // Redirect to OAuth provider
-      window.location.href = authUrl;
+      // Initiate OAuth flow - this will redirect the browser
+      initiateOAuth(selectedProvider);
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Login failed');
       onError?.(err);
-    } finally {
       setActionLoading(false);
     }
   };
